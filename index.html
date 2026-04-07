@@ -213,7 +213,7 @@ body {
     </div>
     <div class="masthead-meta">
       <div class="masthead-date">April 6, 2026</div>
-      <div class="masthead-pill">Pipeline · RISA Sales</div>
+      <div class="masthead-pill">Pipeline name: RISA Sales</div>
     </div>
   </div>
 
@@ -264,7 +264,7 @@ body {
         <button class="toggle-btn" id="btn-tpv" onclick="setMode('tpv')">By TPV</button>
       </div>
     </div>
-    <div class="funnel" id="funnel" style="position:relative;height:266px;"><canvas id="funnelChart"></canvas></div>
+    <div class="funnel" id="funnel" style="position:relative;height:340px;"><canvas id="funnelChart"></canvas></div>
     <div class="funnel-legend">
       <div class="leg-item"><div class="leg-block" style="background:#c5d8f8;"></div>Active pipeline</div>
       <div class="leg-item"><div class="leg-block" style="background:#b2ddd7;"></div>Won · live customers</div>
@@ -277,6 +277,33 @@ body {
   <div class="card" style="margin-bottom:16px;">
     <div class="card-title">Pipeline growth over time</div>
     <div class="chart-wrap" style="height:160px;"><canvas id="timelineLine"></canvas></div>
+  </div>
+
+  <!-- Oncologists by stage — donut + total -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">Number of oncologists in accounts by stage</div>
+    <div style="display:flex;align-items:center;gap:40px;">
+      <div style="position:relative;height:260px;width:260px;flex-shrink:0;">
+        <canvas id="oncologistsChart"></canvas>
+      </div>
+      <div style="flex:1;">
+        <div style="font-family:'Instrument Serif',serif;font-size:56px;font-weight:400;letter-spacing:-1px;color:var(--ink);line-height:1;">2,616</div>
+        <div style="font-size:12px;color:var(--ink-3);margin-top:4px;margin-bottom:28px;font-weight:300;">total oncologists across all stages</div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="onc-legend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts row: weighted + avg deal -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Weighted value by stage</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="bubbleChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Avg deal size by stage</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="avgBar"></canvas></div>
+    </div>
   </div>
 
   <!-- 3-column: Top Deals · Live Customers · Contract Sent -->
@@ -298,18 +325,6 @@ body {
     <div class="card">
       <div class="card-title">Contract sent · closing soon</div>
       <div id="contract-section"></div>
-    </div>
-  </div>
-
-  <!-- Charts row: bubble + avg deal -->
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Weighted value by stage</div>
-      <div class="chart-wrap" style="height:240px;"><canvas id="bubbleChart"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Avg deal size by stage</div>
-      <div class="chart-wrap" style="height:240px;"><canvas id="avgBar"></canvas></div>
     </div>
   </div>
 
@@ -391,7 +406,7 @@ const stageAccounts = [
   ['City of Hope','Cardinal Health','HighlandsOncology, PA'],
   ['Piedmont Cancer Institute','House Rx'],
   ['TXCC'],
-  ['Tennessee Oncology','New York Cancer & Blood Specialists','GenesisCare USA','Los Angeles Cancer Network','Astera Cancer Care','New York Oncology Hematology','Mary Bird Perkins Cancer Center','The Cancer & Hematology Centers','Coastal Cancer Center','Connecticut Oncology Group','MOASD Med. Oncology Assoc. San Diego','University Cancer & Blood Center','Hematology Oncology Assoc. Palm Beaches','Pacific Cancer Care','Oncology Specialists of Charlotte','ECHO Eastern CT Hematology & Oncology','Ventura County Hematology Oncology','Lowcountry Oncology Associates','Arizona Blood & Cancer Specialists'],
+  ['— Live —','Tennessee Oncology','New York Cancer & Blood Specialists','GenesisCare USA','Astera Cancer Care','New York Oncology Hematology','Mary Bird Perkins Cancer Center','The Cancer & Hematology Centers','University Cancer & Blood Center','— Contracted —','Los Angeles Cancer Network','Coastal Cancer Center','Connecticut Oncology Group','MOASD Med. Oncology Assoc. San Diego','Hematology Oncology Assoc. Palm Beaches','Pacific Cancer Care','Oncology Specialists of Charlotte','ECHO Eastern CT Hematology & Oncology','Ventura County Hematology Oncology','Lowcountry Oncology Associates','Arizona Blood & Cancer Specialists'],
   ['Texas Oncology','R1 RCM','OncoHealth','Daymark Health','Retina Consultants of America','Thymecare','Firstsource','Sutter Health'],
 ];
 
@@ -406,8 +421,8 @@ const funnelChart = new Chart(document.getElementById('funnelChart'), {
       backgroundColor: stageColors,
       borderWidth: 0,
       borderRadius: 3,
-      barPercentage: 0.88,
-      categoryPercentage: 0.92,
+      barPercentage: 0.96,
+      categoryPercentage: 0.85,
     }]
   },
   options: {
@@ -436,7 +451,7 @@ const funnelChart = new Chart(document.getElementById('funnelChart'), {
           const stage = stageNames[i];
           const countVal = stageCount[i];
           const tpvVal = stageTpv[i];
-          el.innerHTML = `<div style="font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#888;font-weight:500;margin-bottom:8px;">${stage}</div>${accounts.map(a=>`<div style="color:#e0e0e0;line-height:1.8;">${a}</div>`).join('')}<div style="margin-top:8px;padding-top:7px;border-top:1px solid #333;font-size:10px;color:#aaa;">${countVal} deal${countVal!==1?'s':''} · TPV $${tpvVal||0}M</div>`;
+          el.innerHTML = `<div style="font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#888;font-weight:500;margin-bottom:8px;">${stage}</div>${accounts.map(a => a.startsWith('—') ? `<div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#666;font-weight:600;margin:8px 0 4px;padding-top:8px;border-top:1px solid #2a2a2a">${a.replaceAll('—','').trim()}</div>` : `<div style="color:#e0e0e0;line-height:1.8;">${a}</div>`).join('')}<div style="margin-top:8px;padding-top:7px;border-top:1px solid #333;font-size:10px;color:#aaa;">${countVal} deal${countVal!==1?'s':''} · TPV $${tpvVal||0}M · ${stageOncologists[i].toLocaleString()} oncologists</div>`;
           const canvasRect = context.chart.canvas.getBoundingClientRect();
           const x = canvasRect.left + tooltip.caretX;
           const y = canvasRect.top  + tooltip.caretY;
@@ -619,7 +634,52 @@ new Chart(document.getElementById('avgBar'), {type:'bar',data:{
   y:{grid:{display:false},border:{display:false},ticks:{font:{size:10}}}
 }}});
 
-// ── Map ──
+// ── Oncologists by stage — donut ──
+const stageOncologists = [1558, 240, 208, 17, 39, 554, 0];
+const oncStages = ['Prospecting','Warm','Mtg Scheduled','Qualified','Contract Sent','Won · Live','Parked / Lost'];
+const oncColors = ['#c5d8f8','#93c5fd','#60a5fa','#3b82f6','#f5ddb0','#b2ddd7','#f5bfba'];
+
+new Chart(document.getElementById('oncologistsChart'), {
+  type: 'doughnut',
+  data: {
+    labels: oncStages,
+    datasets: [{
+      data: stageOncologists,
+      backgroundColor: oncColors,
+      borderWidth: 2,
+      borderColor: '#fff',
+      hoverBorderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '62%',
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toLocaleString()} oncologists (${Math.round(ctx.parsed/2616*100)}%)` } }
+    }
+  }
+});
+
+// Build legend
+const legendEl = document.getElementById('onc-legend');
+oncStages.forEach((stage, i) => {
+  if (stageOncologists[i] === 0) return;
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;';
+  row.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:10px;height:10px;border-radius:2px;background:${oncColors[i]};flex-shrink:0;"></div>
+      <span style="font-size:11px;color:var(--ink-2);">${stage}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-3);">${Math.round(stageOncologists[i]/2616*100)}%</span>
+      <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--ink);min-width:36px;text-align:right;">${stageOncologists[i].toLocaleString()}</span>
+    </div>`;
+  legendEl.appendChild(row);
+});
+
+// ── Oncologists per account by stage ──
 const liveByState = {
   'New York':['New York Cancer & Blood Specialists','New York Oncology Hematology'],
   'Tennessee':['Tennessee Oncology'],
