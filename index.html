@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RISA Sales Pipeline — April 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+:root {
+  --ink: #0e0e0e;
+  --ink-2: #3a3a3a;
+  --ink-3: #7a7a7a;
+  --ink-4: #b0b0b0;
+  --paper: #f8f7f4;
+  --surface: #ffffff;
+  --rule: #e8e6e1;
+  --teal: #1a7f6e;
+  --teal-light: #e8f5f2;
+  --teal-mid: #a8d8d1;
+  --amber: #c47d2c;
+  --amber-light: #fdf3e7;
+  --blue: #2b5ce6;
+  --blue-light: #eef2fd;
+  --slate: #b8c4cc;
+  --slate-mid: #9aa3b0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.page { max-width: 1280px; margin: 0 auto; padding: 40px 40px 60px; }
+
+/* ── Masthead ── */
+.masthead { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 24px; border-bottom: 1.5px solid var(--ink); margin-bottom: 36px; }
+.masthead-title { font-family: 'Instrument Serif', serif; font-size: 42px; font-weight: 400; letter-spacing: -.5px; line-height: 1; }
+.masthead-sub { font-size: 15px; color: var(--ink-3); margin-top: 6px; font-weight: 300; }
+.masthead-meta { text-align: right; }
+.masthead-date { font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--ink-3); letter-spacing: .04em; }
+.masthead-pill { display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 2px; background: var(--ink); color: #fff; letter-spacing: .06em; text-transform: uppercase; }
+
+/* ── Section label ── */
+.section-sep { display: flex; align-items: center; gap: 14px; margin: 40px 0 20px; }
+.section-sep-title { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 600; letter-spacing: -.4px; white-space: nowrap; }
+.section-sep-line { flex: 1; height: 1px; background: var(--rule); }
+.section-sep-count { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--ink-3); white-space: nowrap; }
+
+/* ── KPI strip ── */
+.kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--rule); border-radius: 2px; background: var(--surface); overflow: hidden; margin-bottom: 20px; }
+.kpi { padding: 24px 28px; border-right: 1px solid var(--rule); position: relative; opacity: 0; animation: fadeUp .5s ease forwards; }
+.kpi:last-child { border-right: none; }
+.kpi:nth-child(1){animation-delay:.05s} .kpi:nth-child(2){animation-delay:.1s} .kpi:nth-child(3){animation-delay:.15s} .kpi:nth-child(4){animation-delay:.2s}
+.kpi-accent { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.kpi-label { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+.kpi-value { font-family: 'DM Sans', sans-serif; font-size: 34px; font-weight: 700; line-height: 1; letter-spacing: -1px; margin-bottom: 8px; }
+.kpi-sub { font-size: 11px; color: var(--ink-3); font-weight: 300; }
+.kpi-sub b { font-weight: 500; }
+
+/* ── Funnel card ── */
+.funnel-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; padding: 26px 32px; margin-bottom: 16px; opacity: 0; animation: fadeUp .5s ease .08s forwards; overflow: visible; }
+.funnel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.funnel-header-left { display: flex; align-items: baseline; gap: 12px; }
+.funnel-card-title { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.funnel-card-badge { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--ink-4); }
+
+/* Toggle */
+.toggle-wrap { display: flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.toggle-btn { padding: 5px 16px; font-size: 11px; font-weight: 500; cursor: pointer; background: transparent; border: none; color: var(--ink-3); transition: background .15s, color .15s; font-family: 'DM Sans', sans-serif; letter-spacing: .02em; }
+.toggle-btn.active { background: var(--ink); color: #fff; }
+.toggle-btn:not(.active):hover { background: var(--paper); }
+
+/* Funnel rows */
+.funnel { display: flex; flex-direction: column; gap: 7px; }
+.f-row { display: flex; align-items: center; gap: 14px; }
+.f-label { font-size: 11px; color: var(--ink-3); width: 120px; flex-shrink: 0; }
+.f-track { flex: 1; height: 38px; background: #f5f4f1; border-radius: 2px; position: relative; }
+.f-fill {
+  height: 100%; display: flex; align-items: center; padding: 0 14px; gap: 10px;
+  transition: width .55s cubic-bezier(.16,1,.3,1); cursor: default;
+  min-width: 0; overflow: hidden; border-radius: 2px;
+}
+.f-amt { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.f-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-3); width: 60px; text-align: right; flex-shrink: 0; }
+
+/* Global funnel tooltip — fixed so overflow:hidden can't clip it */
+#funnel-tip {
+  position: fixed;
+  background: var(--ink); color: #fff;
+  padding: 10px 14px; border-radius: 5px;
+  font-size: 11px; font-family: 'DM Sans', sans-serif;
+  pointer-events: none; opacity: 0;
+  transition: opacity .12s;
+  z-index: 9999;
+  max-width: 280px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.22);
+}
+#funnel-tip strong {
+  display: block; font-size: 10px; letter-spacing: .07em;
+  text-transform: uppercase; color: #999;
+  margin-bottom: 6px; font-weight: 500;
+}
+#funnel-tip span { display: block; color: #e0e0e0; line-height: 1.75; }
+
+.fill-blue { background: #c5d8f8; } .fill-blue .f-amt { color: #1a44b8; }
+.fill-teal { background: #b2ddd7; } .fill-teal .f-amt { color: #146355; }
+.fill-amber { background: #f5ddb0; } .fill-amber .f-amt { color: #965f1a; }
+.fill-red  { background: #f5bfba; } .fill-red  .f-amt { color: #9e2017; }
+
+.funnel-legend { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px 0 0; border-top: 1px solid var(--rule); margin-top: 16px; }
+.leg-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--ink-3); }
+.leg-block { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Grids ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+/* ── Card ── */
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; padding: 24px; opacity: 0; animation: fadeUp .5s ease forwards; }
+.card-title { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 20px; }
+.card-title-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.card-title-flex .card-title { margin-bottom: 0; }
+.card-badge { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--ink-4); }
+
+/* ── Deal rows — no logo boxes ── */
+.deal-list { display: flex; flex-direction: column; }
+.deal-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--rule); }
+.deal-row:first-child { padding-top: 0; } .deal-row:last-child { border-bottom: none; padding-bottom: 0; }
+.deal-info { display: flex; flex-direction: column; gap: 2px; }
+.deal-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+.deal-pill { display: inline-block; font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; }
+.pill-blue { background: var(--blue-light); color: var(--blue); }
+.pill-teal { background: var(--teal-light); color: var(--teal); }
+.deal-amount { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -.5px; }
+
+/* ── Won chips — text only, no logo boxes ── */
+.won-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.won-chip {
+  font-size: 11px; font-weight: 500; color: var(--teal);
+  padding: 5px 11px; background: var(--teal-light); border-radius: 4px;
+  cursor: default; position: relative;
+}
+.won-chip:hover .won-tooltip { opacity: 1; }
+.won-tooltip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink); color: #e8e8e8;
+  padding: 6px 10px; border-radius: 4px;
+  font-size: 11px; white-space: nowrap; font-weight: 400;
+  opacity: 0; transition: opacity .15s; pointer-events: none;
+  z-index: 100; box-shadow: 0 4px 16px rgba(0,0,0,.18);
+}
+.won-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color: var(--ink); }
+
+/* ── Contract chip — no logo box ── */
+.contract-chip { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--amber-light); border-radius: 4px; }
+.contract-name { font-size: 15px; font-weight: 500; color: var(--amber); }
+.contract-right { display: flex; align-items: center; gap: 10px; }
+.contract-amt { font-family: 'Geist Mono', monospace; font-size: 13px; color: var(--amber); }
+.contract-prob { font-size: 10px; font-weight: 600; padding: 3px 9px; background: var(--amber); color: #fff; border-radius: 2px; }
+
+/* ── Chart wraps ── */
+.chart-wrap { position: relative; }
+
+/* ── Map ── */
+.map-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; padding: 28px; margin-bottom: 16px; opacity: 0; animation: fadeUp .6s ease forwards; }
+.map-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.map-title { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 600; letter-spacing: -.4px; }
+.map-sub { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+#map-svg { width: 100%; }
+.us-state { stroke: #fff; stroke-width: 0.8; cursor: default; }
+.us-state:hover { opacity: .82; }
+.map-tooltip { position: fixed; pointer-events: none; background: var(--ink); color: #fff; padding: 10px 14px; border-radius: 4px; font-size: 12px; opacity: 0; transition: opacity .12s; z-index: 999; transform: translate(-50%, -115%); max-width: 340px; white-space: normal; }
+.map-tooltip strong { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+.tt-live { color: #6ee7b7; display: block; margin-top: 3px; line-height: 1.6; }
+.tt-pipe { color: #aab8c4; display: block; margin-top: 3px; line-height: 1.6; }
+
+/* ── State lists ── */
+.state-list { display: flex; flex-direction: column; gap: 6px; }
+.state-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 9px 12px; border-radius: 3px; gap: 12px; }
+.state-row.s-live { background: var(--teal-light); }
+.state-row.s-pipe { background: #f0f2f4; }
+.state-left { display: flex; align-items: flex-start; gap: 10px; }
+.s-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.s-dot-live { background: var(--teal); } .s-dot-pipe { background: var(--slate-mid); }
+.s-name { font-size: 12px; font-weight: 600; }
+.s-accounts { font-size: 10px; color: var(--ink-3); margin-top: 2px; line-height: 1.5; }
+.s-badge { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+.badge-live { background: var(--teal); color: #fff; }
+.badge-pipe { background: var(--slate); color: #555; }
+.badge-both { background: #148a78; color: #fff; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.card:nth-child(1){animation-delay:.08s} .card:nth-child(2){animation-delay:.14s}
+.card:nth-child(3){animation-delay:.2s}  .card:nth-child(4){animation-delay:.26s}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Masthead -->
+  <div class="masthead">
+    <div>
+      <div class="masthead-title">RISA Sales Pipeline</div>
+      <div class="masthead-sub">Live data from HubSpot CRM</div>
+    </div>
+    <div class="masthead-meta">
+      <div class="masthead-date">April 6, 2026</div>
+      <div class="masthead-pill">Pipeline · RISA Sales</div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-strip">
+    <div class="kpi">
+      <div class="kpi-accent" style="background:var(--teal);"></div>
+      <div class="kpi-label">Live customers · ARR</div>
+      <div class="kpi-value" style="color:var(--teal);">$1.94M</div>
+      <div class="kpi-sub"><b>19</b> accounts contracted &amp; live</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-accent" style="background:var(--blue);"></div>
+      <div class="kpi-label">Active pipeline</div>
+      <div class="kpi-value">$27.6M</div>
+      <div class="kpi-sub"><b>25</b> open deals across 5 stages</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-accent" style="background:#7c9e40;"></div>
+      <div class="kpi-label">Weighted pipeline</div>
+      <div class="kpi-value" style="color:#5a7a2a;">$3.02M</div>
+      <div class="kpi-sub">Probability-adjusted across all stages</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-accent" style="background:var(--amber);"></div>
+      <div class="kpi-label">Contract sent</div>
+      <div class="kpi-value" style="color:var(--amber);">$32K</div>
+      <div class="kpi-sub">TXCC · closing soon</div>
+    </div>
+  </div>
+
+  <!-- Section -->
+  <div class="section-sep">
+    <span class="section-sep-title">Pipeline &amp; Deals</span>
+    <div class="section-sep-line"></div>
+    <span class="section-sep-count">52 total records</span>
+  </div>
+
+  <!-- Full-width funnel with toggle -->
+  <div class="funnel-card">
+    <div class="funnel-header">
+      <div class="funnel-header-left">
+        <span class="funnel-card-title">Deal flow by stage</span>
+        <span class="funnel-card-badge">hover bars to see accounts · toggle to switch metric</span>
+      </div>
+      <div class="toggle-wrap">
+        <button class="toggle-btn active" id="btn-count" onclick="setMode('count')">By deal count</button>
+        <button class="toggle-btn" id="btn-tpv" onclick="setMode('tpv')">By TPV</button>
+      </div>
+    </div>
+    <div class="funnel" id="funnel" style="position:relative;height:266px;"><canvas id="funnelChart"></canvas></div>
+    <div class="funnel-legend">
+      <div class="leg-item"><div class="leg-block" style="background:#c5d8f8;"></div>Active pipeline</div>
+      <div class="leg-item"><div class="leg-block" style="background:#b2ddd7;"></div>Won · live customers</div>
+      <div class="leg-item"><div class="leg-block" style="background:#f5ddb0;"></div>Contract sent</div>
+      <div class="leg-item"><div class="leg-block" style="background:#f5bfba;"></div>Parked / lost</div>
+    </div>
+  </div>
+
+  <!-- Pipeline growth — full width -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">Pipeline growth over time</div>
+    <div class="chart-wrap" style="height:160px;"><canvas id="timelineLine"></canvas></div>
+  </div>
+
+  <!-- 3-column: Top Deals · Live Customers · Contract Sent -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title-flex">
+        <span class="card-title">Top open opportunities</span>
+        <span class="card-badge">by size</span>
+      </div>
+      <div class="deal-list" id="top-deals"></div>
+    </div>
+    <div class="card">
+      <div class="card-title-flex">
+        <span class="card-title">Live customers</span>
+        <span class="card-badge" style="color:var(--teal);">19 · $1.94M ARR</span>
+      </div>
+      <div class="won-grid" id="won-grid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Contract sent · closing soon</div>
+      <div id="contract-section"></div>
+    </div>
+  </div>
+
+  <!-- Charts row: bubble + avg deal -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Weighted value by stage</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="bubbleChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Avg deal size by stage</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="avgBar"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Section: Geographic -->
+  <div class="section-sep">
+    <span class="section-sep-title">Geographic Footprint</span>
+    <div class="section-sep-line"></div>
+    <span class="section-sep-count">22 states covered</span>
+  </div>
+
+  <!-- Geo KPIs -->
+  <div class="kpi-strip" style="margin-bottom:20px;">
+    <div class="kpi">
+      <div class="kpi-accent" style="background:var(--teal);"></div>
+      <div class="kpi-label">States · live customers</div>
+      <div class="kpi-value" style="color:var(--teal);">13</div>
+      <div class="kpi-sub">19 accounts contracted</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-accent" style="background:var(--slate-mid);"></div>
+      <div class="kpi-label">States · pipeline only</div>
+      <div class="kpi-value" style="color:var(--slate-mid);">16</div>
+      <div class="kpi-sub">25 open deals</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-accent" style="background:var(--ink);"></div>
+      <div class="kpi-label">Total states covered</div>
+      <div class="kpi-value">22</div>
+      <div class="kpi-sub">Live + pipeline combined</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-accent" style="background:var(--teal);"></div>
+      <div class="kpi-label">States — live &amp; in pipeline</div>
+      <div class="kpi-value" style="color:var(--teal);">7</div>
+      <div class="kpi-sub">Deepening existing presence</div>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div class="map-card">
+    <div class="map-header">
+      <div>
+        <div class="map-title">US Coverage Map</div>
+        <div class="map-sub">Hover any colored state to see accounts</div>
+      </div>
+      <div class="funnel-legend" style="padding:0;border:none;margin:0;">
+        <div class="leg-item"><div class="leg-block" style="background:#1a7f6e;"></div>Live customers</div>
+        <div class="leg-item"><div class="leg-block" style="background:#b8c4cc;"></div>Pipeline only</div>
+        <div class="leg-item"><div class="leg-block" style="background:#eeece8;border:1px solid #ddd;"></div>No presence</div>
+      </div>
+    </div>
+    <svg id="map-svg" viewBox="0 0 960 580"></svg>
+  </div>
+  <div class="map-tooltip" id="map-tooltip"></div>
+
+  <!-- State lists -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Live customer states</div>
+      <div class="state-list" id="live-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pipeline states</div>
+      <div class="state-list" id="pipe-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Funnel data ──
+const stageNames  = ['Prospecting','Warm','Mtg Scheduled','Qualified','Contract Sent','Won · Live','Parked / Lost'];
+const stageTpv    = [22.7, 4.08, 2.5, 0.192, 0.032, 1.94, 0];
+const stageCount  = [19, 3, 3, 2, 1, 19, 8];
+const stageColors = ['#c5d8f8','#c5d8f8','#c5d8f8','#c5d8f8','#f5ddb0','#b2ddd7','#f5bfba'];
+const stageAccounts = [
+  ['US Oncology','CommonSpirit Health','Mass General Brigham','Ascension','Cleveland Clinic','NewYork-Presbyterian','Moffitt Cancer Center','Beth Israel Lahey Health','UC Davis','Westchester Medical Center','Nebraska Cancer Specialists','Coastal Cancer Center','University of Kentucky','Fred Hutch','Providence Health & Services'],
+  ['Mayo Clinic','Northwell Health','Memorial Hermann'],
+  ['City of Hope','Cardinal Health','HighlandsOncology, PA'],
+  ['Piedmont Cancer Institute','House Rx'],
+  ['TXCC'],
+  ['Tennessee Oncology','New York Cancer & Blood Specialists','GenesisCare USA','Los Angeles Cancer Network','Astera Cancer Care','New York Oncology Hematology','Mary Bird Perkins Cancer Center','The Cancer & Hematology Centers','Coastal Cancer Center','Connecticut Oncology Group','MOASD Med. Oncology Assoc. San Diego','University Cancer & Blood Center','Hematology Oncology Assoc. Palm Beaches','Pacific Cancer Care','Oncology Specialists of Charlotte','ECHO Eastern CT Hematology & Oncology','Ventura County Hematology Oncology','Lowcountry Oncology Associates','Arizona Blood & Cancer Specialists'],
+  ['Texas Oncology','R1 RCM','OncoHealth','Daymark Health','Retina Consultants of America','Thymecare','Firstsource','Sutter Health'],
+];
+
+let currentMode = 'count';
+
+const funnelChart = new Chart(document.getElementById('funnelChart'), {
+  type: 'bar',
+  data: {
+    labels: stageNames,
+    datasets: [{
+      data: stageCount,
+      backgroundColor: stageColors,
+      borderWidth: 0,
+      borderRadius: 3,
+      barPercentage: 0.88,
+      categoryPercentage: 0.92,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    clip: false,
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 550, easing: 'easeInOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        enabled: false,
+        external(context) {
+          let el = document.getElementById('funnel-ext-tip');
+          if (!el) {
+            el = document.createElement('div');
+            el.id = 'funnel-ext-tip';
+            el.style.cssText = 'position:fixed;background:#0e0e0e;color:#fff;padding:12px 16px;border-radius:6px;font-size:11px;font-family:"DM Sans",sans-serif;pointer-events:none;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.28);max-width:300px;transition:opacity .12s;';
+            document.body.appendChild(el);
+          }
+          const {tooltip} = context;
+          if (tooltip.opacity === 0) { el.style.opacity = '0'; return; }
+          const i = tooltip.dataPoints?.[0]?.dataIndex ?? -1;
+          if (i < 0) return;
+          const accounts = stageAccounts[i];
+          const stage = stageNames[i];
+          const countVal = stageCount[i];
+          const tpvVal = stageTpv[i];
+          el.innerHTML = `<div style="font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#888;font-weight:500;margin-bottom:8px;">${stage}</div>${accounts.map(a=>`<div style="color:#e0e0e0;line-height:1.8;">${a}</div>`).join('')}<div style="margin-top:8px;padding-top:7px;border-top:1px solid #333;font-size:10px;color:#aaa;">${countVal} deal${countVal!==1?'s':''} · TPV $${tpvVal||0}M</div>`;
+          const canvasRect = context.chart.canvas.getBoundingClientRect();
+          const x = canvasRect.left + tooltip.caretX;
+          const y = canvasRect.top  + tooltip.caretY;
+          const ew = 300, eh = el.offsetHeight || 200;
+          const vw = window.innerWidth, vh = window.innerHeight;
+          let left = x + 16;
+          let top  = y - eh / 2;
+          if (left + ew > vw - 8) left = x - ew - 16;
+          if (top < 8) top = 8;
+          if (top + eh > vh - 8) top = vh - eh - 8;
+          el.style.left    = left + 'px';
+          el.style.top     = top  + 'px';
+          el.style.opacity = '1';
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: '#e8e6e1' },
+        border: { display: false },
+        backgroundColor: '#f5f4f1',
+        ticks: { font: { size: 10 }, callback: v => currentMode === 'tpv' ? '$' + v + 'M' : v + ' deals' }
+      },
+      y: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { font: { size: 11 }, color: '#7a7a7a' }
+      }
+    },
+    layout: { padding: { right: 8 } }
+  }
+});
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btn-tpv').classList.toggle('active', mode === 'tpv');
+  document.getElementById('btn-count').classList.toggle('active', mode === 'count');
+  funnelChart.data.datasets[0].data = mode === 'tpv' ? stageTpv : stageCount;
+  funnelChart.options.scales.x.ticks.callback = v => mode === 'tpv' ? '$' + v + 'M' : v + ' deals';
+  funnelChart.update();
+}
+
+// ── Top Deals ── (no logo boxes)
+[
+  {name:'US Oncology',        amt:'$4.0M', stage:'Prospecting'},
+  {name:'CommonSpirit Health',amt:'$2.8M', stage:'Prospecting'},
+  {name:'Mayo Clinic',        amt:'$2.4M', stage:'Warm'},
+  {name:'City of Hope',       amt:'$2.4M', stage:'Mtg Scheduled'},
+  {name:'Mass General Brigham',amt:'$2.0M',stage:'Prospecting'},
+  {name:'Ascension',          amt:'$2.0M', stage:'Prospecting'},
+  {name:'NewYork-Presbyterian',amt:'$1.6M',stage:'Prospecting'},
+  {name:'Cleveland Clinic',   amt:'$1.6M', stage:'Prospecting'},
+].forEach(d => {
+  const row = document.createElement('div'); row.className = 'deal-row';
+  const info = document.createElement('div'); info.className = 'deal-info';
+  const nm = document.createElement('div'); nm.className = 'deal-name'; nm.textContent = d.name; info.appendChild(nm);
+  const pill = document.createElement('div'); pill.className = 'deal-pill pill-blue'; pill.textContent = d.stage; info.appendChild(pill);
+  row.appendChild(info);
+  const amtEl = document.createElement('div'); amtEl.className = 'deal-amount'; amtEl.textContent = d.amt; row.appendChild(amtEl);
+  document.getElementById('top-deals').appendChild(row);
+});
+
+// ── Won Grid ── (text chips, hover for full name)
+const wonDeals = [
+  {short:'NY Cancer & Blood', full:'New York Cancer & Blood Specialists', arr:'$577.5K'},
+  {short:'Tennessee Oncology', full:'Tennessee Oncology', arr:'$353.5K'},
+  {short:'GenesisCare USA', full:'GenesisCare USA', arr:'$227.5K'},
+  {short:'NY Oncology Hematology', full:'New York Oncology Hematology', arr:'$122.5K'},
+  {short:'LA Cancer Network', full:'Los Angeles Cancer Network', arr:'$140K'},
+  {short:'Astera Cancer Care', full:'Astera Cancer Care', arr:'$105K'},
+  {short:'Mary Bird Perkins', full:'Mary Bird Perkins Cancer Center', arr:'$70K'},
+  {short:'Cancer & Hematology Ctrs', full:'The Cancer & Hematology Centers', arr:'$94.5K'},
+  {short:'Coastal Cancer Ctr', full:'Coastal Cancer Center', arr:'$42K'},
+  {short:'CT Oncology Group', full:'Connecticut Oncology Group', arr:'$24.5K'},
+  {short:'MOASD San Diego', full:'MOASD Medical Oncology Associates of San Diego', arr:'$24.5K'},
+  {short:'University Cancer & Blood', full:'University Cancer & Blood Center', arr:'$28K'},
+  {short:'Hematology Oncology PB', full:'Hematology Oncology Associates of the Palm Beaches', arr:'$35K'},
+  {short:'Pacific Cancer Care', full:'Pacific Cancer Care', arr:'$21K'},
+  {short:'Oncology Specialists CLT', full:'Oncology Specialists of Charlotte', arr:'$17.5K'},
+  {short:'ECHO Eastern CT', full:'ECHO Eastern Connecticut Hematology & Oncology', arr:'$17.5K'},
+  {short:'Ventura Hematology', full:'Ventura County Hematology Oncology Specialists', arr:'$14K'},
+  {short:'Lowcountry Oncology', full:'Lowcountry Oncology Associates', arr:'$14K'},
+  {short:'AZ Blood & Cancer', full:'Arizona Blood & Cancer Specialists', arr:'$10.5K'},
+];
+const wg = document.getElementById('won-grid');
+wonDeals.forEach(d => {
+  const chip = document.createElement('div'); chip.className = 'won-chip';
+  chip.textContent = d.short;
+  const tip = document.createElement('div'); tip.className = 'won-tooltip';
+  tip.textContent = d.full + ' · ' + d.arr;
+  chip.appendChild(tip);
+  wg.appendChild(chip);
+});
+
+// ── Contract ──
+(() => {
+  const chip = document.createElement('div'); chip.className = 'contract-chip';
+  const nm = document.createElement('span'); nm.className = 'contract-name'; nm.textContent = 'TXCC'; chip.appendChild(nm);
+  const right = document.createElement('div'); right.className = 'contract-right';
+  const ca = document.createElement('span'); ca.className = 'contract-amt'; ca.textContent = '$32K ARR'; right.appendChild(ca);
+  chip.appendChild(right);
+  document.getElementById('contract-section').appendChild(chip);
+})();
+
+// ── Charts ──
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.color = '#7a7a7a';
+Chart.defaults.font.size = 11;
+
+new Chart(document.getElementById('timelineLine'), {type:'line',data:{
+  labels:["Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26","Feb '26","Mar '26","Apr '26"],
+  datasets:[
+    {
+      label:'Active pipeline deals',
+      data:[17,17,18,20,20,20,20,20,20,20,21,22,24,24,24,25],
+      borderColor:'#2b5ce6',
+      backgroundColor:'rgba(43,92,230,0.07)',
+      fill:true, tension:0.3,
+      pointRadius:[0,0,3,3,0,0,0,0,0,0,3,3,3,0,0,3],
+      pointBackgroundColor:'#2b5ce6',
+      borderWidth:2.5,
+    },
+    {
+      label:'Won (live customers)',
+      data:[2,2,2,5,5,7,7,7,8,8,8,19,19,19,19,19],
+      borderColor:'#1a7f6e',
+      backgroundColor:'rgba(26,127,110,0.08)',
+      fill:true, tension:0.3,
+      pointRadius:[0,0,0,3,0,3,0,0,3,0,0,5,0,0,0,0],
+      pointBackgroundColor:'#1a7f6e',
+      borderWidth:2,
+      borderDash:[],
+    }
+  ]
+},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{
+    legend:{display:true,position:'bottom',labels:{boxWidth:9,boxHeight:9,padding:16,font:{size:10},usePointStyle:true}},
+    tooltip:{callbacks:{label: ctx => ` ${ctx.parsed.y} ${ctx.dataset.label.toLowerCase()}`}}
+  },
+  scales:{
+    x:{grid:{display:false},border:{display:false},ticks:{font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:9}},
+    y:{grid:{color:'#f0ede8'},border:{display:false},ticks:{font:{size:10},stepSize:5},min:0,max:30}
+  }
+}});
+
+new Chart(document.getElementById('bubbleChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Prospecting', 'Warm', 'Mtg Scheduled', 'Qualified', 'Contract Sent', 'Won · Live'],
+    datasets: [{
+      label: 'Weighted value',
+      data: [2.27, 0.408, 0.25, 0.058, 0.029, 1.94],
+      backgroundColor: ['#c5d8f8','#b8cff4','#aac6f0','#9dbdec','#f5ddb0','#b2ddd7'],
+      borderWidth: 0,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: {display:false},
+      tooltip: {callbacks:{label: ctx => {
+        const v = ctx.parsed.x;
+        return v >= 1 ? ` $${v.toFixed(2)}M` : ` $${Math.round(v*1000)}K`;
+      }}}
+    },
+    scales: {
+      x: {grid:{color:'#f0ede8'},border:{display:false},ticks:{callback:v=>v>=1?'$'+v+'M':'$'+Math.round(v*1000)+'K',font:{size:10}}},
+      y: {grid:{display:false},border:{display:false},ticks:{font:{size:11},color:'#3a3a3a'}}
+    }
+  }
+});
+
+new Chart(document.getElementById('avgBar'), {type:'bar',data:{
+  labels:['Prospecting','Warm','Mtg Sched','Qualified','Won'],
+  datasets:[{data:[1.19,1.36,0.83,0.096,0.102],backgroundColor:['#c5d8f8','#b8cff4','#aac6f0','#9dbdec','#b2ddd7'],borderWidth:0,borderRadius:2}]
+},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+  x:{grid:{color:'#f0ede8'},border:{display:false},ticks:{callback:v=>'$'+v+'M',font:{size:10}}},
+  y:{grid:{display:false},border:{display:false},ticks:{font:{size:10}}}
+}}});
+
+// ── Map ──
+const liveByState = {
+  'New York':['New York Cancer & Blood Specialists','New York Oncology Hematology'],
+  'Tennessee':['Tennessee Oncology'],
+  'Florida':['GenesisCare USA','Hematology Oncology Associates of the Palm Beaches'],
+  'California':['Los Angeles Cancer Network','MOASD Med. Oncology (San Diego)','Pacific Cancer Care','Ventura County Hematology Oncology'],
+  'New Jersey':['Astera Cancer Care'],'Louisiana':['Mary Bird Perkins Cancer Center'],
+  'Michigan':['The Cancer & Hematology Centers'],
+  'South Carolina':['Coastal Cancer Center','Lowcountry Oncology Associates'],
+  'Georgia':['University Cancer & Blood Center'],
+  'Connecticut':['Connecticut Oncology Group','ECHO Eastern CT Hematology & Oncology'],
+  'North Carolina':['Oncology Specialists of Charlotte'],
+  'Arizona':['Arizona Blood & Cancer Specialists'],
+};
+const pipeByState = {
+  'Texas':['US Oncology','Memorial Hermann','TXCC'],'Illinois':['CommonSpirit Health'],
+  'Massachusetts':['Mass General Brigham','Beth Israel Lahey Health'],'Missouri':['Ascension'],
+  'New York':['NewYork-Presbyterian','Westchester Medical Center','Northwell Health','House Rx'],
+  'Ohio':['Cleveland Clinic','Cardinal Health'],'Washington':['Fred Hutch','Providence Health & Services'],
+  'Kentucky':['University of Kentucky'],'California':['City of Hope','UC Davis'],
+  'Florida':['Moffitt Cancer Center'],'Minnesota':['Mayo Clinic'],'Nebraska':['Nebraska Cancer Specialists'],
+  'Georgia':['Piedmont Cancer Institute'],'New Jersey':['Atlantic Health'],'Arkansas':['HighlandsOncology, PA'],
+};
+
+function stateStatus(n){ const l=!!liveByState[n],p=!!pipeByState[n]; return l&&p?'both':l?'live':p?'pipeline':'none'; }
+function stateFill(s){ return s==='live'?'#1a7f6e':s==='both'?'#148a78':s==='pipeline'?'#b8c4cc':'#eeece8'; }
+
+// State lists
+Object.entries(liveByState).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([state,accounts])=>{
+  const inPipe=!!pipeByState[state];
+  const row=document.createElement('div');row.className='state-row s-live';
+  row.innerHTML=`<div class="state-left"><div class="s-dot s-dot-live"></div><div><div class="s-name">${state}</div><div class="s-accounts">${accounts.join(' · ')}</div></div></div>`;
+  document.getElementById('live-list').appendChild(row);
+});
+Object.entries(pipeByState).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([state,accounts])=>{
+  const isLive=!!liveByState[state];
+  const row=document.createElement('div');row.className='state-row s-pipe';
+  row.innerHTML=`<div class="state-left"><div class="s-dot s-dot-pipe"></div><div><div class="s-name">${state}</div><div class="s-accounts">${accounts.join(' · ')}</div></div></div>${isLive?'<span class="s-badge badge-both">also live</span>':'<span class="s-badge badge-pipe">pipeline</span>'}`;
+  document.getElementById('pipe-list').appendChild(row);
+});
+
+// D3 map
+const mapSvg = d3.select('#map-svg');
+const tt = document.getElementById('map-tooltip');
+const proj = d3.geoAlbersUsa().scale(1200).translate([480, 290]);
+const pathFn = d3.geoPath(proj);
+d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
+  mapSvg.selectAll('path')
+    .data(topojson.feature(us, us.objects.states).features)
+    .join('path')
+    .attr('class','us-state')
+    .attr('d', pathFn)
+    .attr('fill', d => stateFill(stateStatus(d.properties.name)))
+    .on('mousemove', function(event, d) {
+      const name = d.properties.name, status = stateStatus(name);
+      if (status === 'none') { tt.style.opacity = '0'; return; }
+      const live = liveByState[name] || [], pipe = pipeByState[name] || [];
+      let html = `<strong>${name}</strong>`;
+      if (live.length) html += `<span class="tt-live">● Live: ${live.join(', ')}</span>`;
+      if (pipe.length) html += `<span class="tt-pipe">● Pipeline: ${pipe.join(', ')}</span>`;
+      tt.innerHTML = html;
+      tt.style.left = event.clientX + 'px';
+      tt.style.top = event.clientY + 'px';
+      tt.style.opacity = '1';
+    })
+    .on('mouseleave', () => { tt.style.opacity = '0'; });
+});
+</script>
+</body>
+</html>
