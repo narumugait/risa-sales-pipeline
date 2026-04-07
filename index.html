@@ -317,10 +317,13 @@ body {
     </div>
     <div class="card">
       <div class="card-title-flex">
-        <span class="card-title">Live customers</span>
+        <span class="card-title">Won Deals</span>
         <span class="card-badge" style="color:var(--teal);">19 · $1.94M ARR</span>
       </div>
-      <div class="won-grid" id="won-grid"></div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">Live</div>
+      <div class="won-grid" id="won-grid-live"></div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-top:14px;margin-bottom:8px;">Contracted</div>
+      <div class="won-grid" id="won-grid-contracted"></div>
     </div>
     <div class="card">
       <div class="card-title">Contract sent · closing soon</div>
@@ -515,36 +518,43 @@ function setMode(mode) {
 });
 
 // ── Won Grid ── (text chips, hover for full name)
-const wonDeals = [
-  {short:'NY Cancer & Blood', full:'New York Cancer & Blood Specialists', arr:'$577.5K'},
-  {short:'Tennessee Oncology', full:'Tennessee Oncology', arr:'$353.5K'},
-  {short:'GenesisCare USA', full:'GenesisCare USA', arr:'$227.5K'},
-  {short:'NY Oncology Hematology', full:'New York Oncology Hematology', arr:'$122.5K'},
-  {short:'LA Cancer Network', full:'Los Angeles Cancer Network', arr:'$140K'},
-  {short:'Astera Cancer Care', full:'Astera Cancer Care', arr:'$105K'},
-  {short:'Mary Bird Perkins', full:'Mary Bird Perkins Cancer Center', arr:'$70K'},
-  {short:'Cancer & Hematology Ctrs', full:'The Cancer & Hematology Centers', arr:'$94.5K'},
-  {short:'Coastal Cancer Ctr', full:'Coastal Cancer Center', arr:'$42K'},
-  {short:'CT Oncology Group', full:'Connecticut Oncology Group', arr:'$24.5K'},
-  {short:'MOASD San Diego', full:'MOASD Medical Oncology Associates of San Diego', arr:'$24.5K'},
-  {short:'University Cancer & Blood', full:'University Cancer & Blood Center', arr:'$28K'},
-  {short:'Hematology Oncology PB', full:'Hematology Oncology Associates of the Palm Beaches', arr:'$35K'},
-  {short:'Pacific Cancer Care', full:'Pacific Cancer Care', arr:'$21K'},
-  {short:'Oncology Specialists CLT', full:'Oncology Specialists of Charlotte', arr:'$17.5K'},
-  {short:'ECHO Eastern CT', full:'ECHO Eastern Connecticut Hematology & Oncology', arr:'$17.5K'},
-  {short:'Ventura Hematology', full:'Ventura County Hematology Oncology Specialists', arr:'$14K'},
-  {short:'Lowcountry Oncology', full:'Lowcountry Oncology Associates', arr:'$14K'},
-  {short:'AZ Blood & Cancer', full:'Arizona Blood & Cancer Specialists', arr:'$10.5K'},
+const wonLive = [
+  {short:'Tennessee Oncology',full:'Tennessee Oncology',arr:'$353.5K'},
+  {short:'NY Cancer & Blood Specialists',full:'New York Cancer & Blood Specialists',arr:'$577.5K'},
+  {short:'GenesisCare USA',full:'GenesisCare USA',arr:'$227.5K'},
+  {short:'Astera Cancer Care',full:'Astera Cancer Care',arr:'$105K'},
+  {short:'NY Oncology Hematology',full:'New York Oncology Hematology',arr:'$122.5K'},
+  {short:'Mary Bird Perkins',full:'Mary Bird Perkins Cancer Center',arr:'$70K'},
+  {short:'Cancer & Hematology Ctrs',full:'The Cancer & Hematology Centers',arr:'$94.5K'},
+  {short:'University Cancer & Blood',full:'University Cancer & Blood Center',arr:'$28K'},
 ];
-const wg = document.getElementById('won-grid');
-wonDeals.forEach(d => {
-  const chip = document.createElement('div'); chip.className = 'won-chip';
-  chip.textContent = d.short;
-  const tip = document.createElement('div'); tip.className = 'won-tooltip';
-  tip.textContent = d.full + ' · ' + d.arr;
-  chip.appendChild(tip);
-  wg.appendChild(chip);
-});
+const wonContracted = [
+  {short:'LA Cancer Network',full:'Los Angeles Cancer Network',arr:'$140K'},
+  {short:'Coastal Cancer Ctr',full:'Coastal Cancer Center',arr:'$42K'},
+  {short:'CT Oncology Group',full:'Connecticut Oncology Group',arr:'$24.5K'},
+  {short:'MOASD San Diego',full:'MOASD Medical Oncology Associates of San Diego',arr:'$24.5K'},
+  {short:'Hematology Oncology PB',full:'Hematology Oncology Associates of the Palm Beaches',arr:'$35K'},
+  {short:'Pacific Cancer Care',full:'Pacific Cancer Care',arr:'$21K'},
+  {short:'Oncology Specialists CLT',full:'Oncology Specialists of Charlotte',arr:'$17.5K'},
+  {short:'ECHO Eastern CT',full:'ECHO Eastern Connecticut Hematology & Oncology',arr:'$17.5K'},
+  {short:'Ventura Hematology',full:'Ventura County Hematology Oncology Specialists',arr:'$14K'},
+  {short:'Lowcountry Oncology',full:'Lowcountry Oncology Associates',arr:'$14K'},
+  {short:'AZ Blood & Cancer',full:'Arizona Blood & Cancer Specialists',arr:'$10.5K'},
+];
+function buildWonChips(deals, containerId, bg, color) {
+  const container = document.getElementById(containerId);
+  deals.forEach(d => {
+    const chip = document.createElement('div'); chip.className = 'won-chip';
+    chip.style.background = bg; chip.style.color = color;
+    chip.textContent = d.short;
+    const tip = document.createElement('div'); tip.className = 'won-tooltip';
+    tip.textContent = d.full + ' · ' + d.arr;
+    chip.appendChild(tip);
+    container.appendChild(chip);
+  });
+}
+buildWonChips(wonLive, 'won-grid-live', 'var(--teal-light)', 'var(--teal)');
+buildWonChips(wonContracted, 'won-grid-contracted', 'var(--blue-light)', 'var(--blue)');
 
 // ── Contract ──
 (() => {
