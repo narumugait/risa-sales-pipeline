@@ -197,9 +197,115 @@ body {
 .badge-pipe { background: var(--slate); color: #555; }
 .badge-both { background: #148a78; color: #fff; }
 
+.onc-layout { display: flex; align-items: center; gap: 40px; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 .card:nth-child(1){animation-delay:.08s} .card:nth-child(2){animation-delay:.14s}
 .card:nth-child(3){animation-delay:.2s}  .card:nth-child(4){animation-delay:.26s}
+
+/* ── Responsive ── */
+
+/* Tablet: 768px–1024px */
+@media (max-width: 1024px) {
+  .page { padding: 28px 24px 48px; }
+  .masthead-title { font-size: 32px; }
+  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+  .kpi:nth-child(2) { border-right: none; }
+  .kpi:nth-child(3) { border-top: 1px solid var(--rule); }
+  .kpi:nth-child(4) { border-top: 1px solid var(--rule); border-right: none; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .funnel-card-badge { display: none; }
+  .card-badge { font-size: 9px; }
+}
+
+/* Mobile: up to 767px */
+@media (max-width: 767px) {
+  .page { padding: 20px 16px 40px; }
+
+  /* Masthead */
+  .masthead { flex-direction: column; align-items: flex-start; gap: 14px; padding-bottom: 18px; margin-bottom: 24px; }
+  .masthead-title { font-size: 28px; }
+  .masthead-sub { font-size: 13px; }
+  .masthead-meta { text-align: left; display: flex; align-items: center; gap: 10px; }
+  .masthead-date { font-size: 11px; }
+  .masthead-pill { font-size: 10px; padding: 3px 8px; margin-top: 0; }
+
+  /* KPI strip — 1 column on mobile */
+  .kpi-strip { grid-template-columns: 1fr 1fr; }
+  .kpi { padding: 16px 16px; }
+  .kpi:nth-child(2) { border-right: none; }
+  .kpi:nth-child(3) { border-top: 1px solid var(--rule); }
+  .kpi:nth-child(4) { border-top: 1px solid var(--rule); border-right: none; }
+  .kpi-value { font-size: 26px; }
+  .kpi-label { font-size: 9px; }
+  .kpi-sub { font-size: 10px; }
+
+  /* Grids — all single column */
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+
+  /* Funnel card */
+  .funnel-card { padding: 18px 16px; }
+  .funnel-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .funnel-card-badge { display: none; }
+  .toggle-wrap { align-self: flex-end; }
+  .funnel-legend { gap: 12px; }
+
+  /* Section separator */
+  .section-sep { margin: 28px 0 16px; }
+  .section-sep-title { font-size: 15px; }
+
+  /* Cards */
+  .card { padding: 16px; }
+  .card-title { font-size: 9px; }
+  .card-title-flex { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .card-badge { font-size: 9px; }
+
+  /* Deal rows */
+  .deal-amount { font-size: 16px; }
+
+  /* Oncologist donut + total */
+  #onc-legend .card { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .card > div[style*="display:flex"][style*="gap:40px"] {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .card > div[style*="display:flex"][style*="gap:40px"] > div:first-child {
+    width: 100% !important;
+    height: 220px !important;
+  }
+
+  /* Oncologist donut */
+  .onc-layout { flex-direction: column; gap: 20px; }
+  .onc-layout > div:first-child { width: 100% !important; height: 220px; }
+
+  /* Map */
+  .map-card { padding: 16px; }
+  .map-header { flex-direction: column; gap: 12px; }
+  .map-header .funnel-legend { padding: 0; border: none; margin: 0; }
+
+  /* State lists */
+  .s-accounts { font-size: 9px; }
+
+  /* Won chips */
+  .won-chip { font-size: 10px; padding: 4px 9px; }
+  .won-tooltip { font-size: 10px; max-width: 200px; white-space: normal; }
+
+  /* Contract chip */
+  .contract-chip { flex-wrap: wrap; }
+
+  /* Geo KPI strip */
+  .kpi-strip[style*="margin-bottom:20px"] { grid-template-columns: 1fr 1fr; }
+}
+
+/* Small mobile: up to 400px */
+@media (max-width: 400px) {
+  .kpi-strip { grid-template-columns: 1fr; }
+  .kpi { border-right: none !important; }
+  .kpi:nth-child(n) { border-top: 1px solid var(--rule); }
+  .kpi:first-child { border-top: none; }
+  .masthead-title { font-size: 24px; }
+}
 </style>
 </head>
 <body>
@@ -282,7 +388,7 @@ body {
   <!-- Oncologists by stage — donut + total -->
   <div class="card" style="margin-bottom:16px;">
     <div class="card-title">Number of oncologists in accounts by stage</div>
-    <div style="display:flex;align-items:center;gap:40px;">
+    <div class="onc-layout">
       <div style="position:relative;height:260px;width:260px;flex-shrink:0;">
         <canvas id="oncologistsChart"></canvas>
       </div>
